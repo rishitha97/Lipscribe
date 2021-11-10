@@ -73,7 +73,15 @@ public class MainActivity extends AppCompatActivity {
     private void getCameraPermission(){
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        }
+    }
+    private void getStoragePermission(){
+        Log.i("Storage","storage permission");
+        if(ContextCompat.checkSelfPermission(this, String.valueOf(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}))
+                == PackageManager.PERMISSION_DENIED){
+            Log.i("storage","permission not given");
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},200);
         }
     }
 
@@ -98,11 +106,12 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-
+//        getStoragePermission();
         if(isCameraPresentInPhone())
         {
             Log.i("VIDEO_RECORD_TAG", "Camera is Detected");
             getCameraPermission();
+
         }
         else
         {
@@ -122,6 +131,14 @@ public class MainActivity extends AppCompatActivity {
                     executePython(path);
                     Log.i("Video_Path", "Path new  is "+path);
 //                    /storage/emulated/0/Movies/VID_20211028_151758.mp4
+                    File fdelete = new File(videoPath.getPath());
+                    if (fdelete.exists()) {
+                        if (fdelete.delete()) {
+                            System.out.println("file Deleted :" + videoPath.getPath());
+                        } else {
+                            System.out.println("file not Deleted :" + videoPath.getPath());
+                        }
+                    }
                 }
             }
         });
@@ -141,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
         PyObject pyObj = py.getModule("preprocess");
         Log.i("video_path","video path is after getting module "+video_path);
         PyObject obj = pyObj.callAttr("video_to_npy_array",video_path);
+
+
         //Log.i("python test", "msg is"+obj.toString());
 
     }
