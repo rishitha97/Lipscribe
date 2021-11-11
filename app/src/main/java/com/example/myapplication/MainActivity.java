@@ -128,15 +128,15 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("Video_Path", "Path new  is "+getPath(videoPath));
                     String path= getPath(videoPath);
                     Log.i("Video_Path", "Path new  is "+path);
-                    executePython(path);
+                    String word=executePython(path);
                     Log.i("Video_Path", "Path new  is "+path);
 //                    /storage/emulated/0/Movies/VID_20211028_151758.mp4
                     File fdelete = new File(videoPath.getPath());
                     if (fdelete.exists()) {
                         if (fdelete.delete()) {
-                            System.out.println("file Deleted :" + videoPath.getPath());
+                            Log.i("file Deleted :", videoPath.getPath());
                         } else {
-                            System.out.println("file not Deleted :" + videoPath.getPath());
+                            Log.i("file not Deleted :", videoPath.getPath());
                         }
                     }
                 }
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void executePython(String video_path)
+    public String executePython(String video_path)
     {
         if(!Python.isStarted())
         {
@@ -160,7 +160,8 @@ public class MainActivity extends AppCompatActivity {
         PyObject obj = pyObj.callAttr("video_to_npy_array",video_path);
 
 
-        //Log.i("python test", "msg is"+obj.toString());
+        Log.i("python test", "msg is"+obj.toString());
+        return obj.toString();
 
     }
 
