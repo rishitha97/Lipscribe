@@ -25,6 +25,7 @@ import android.view.View;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -34,6 +35,7 @@ import com.example.myapplication.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -99,6 +101,9 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
+//        Button b1 = (Button) findViewById(R.id.button_first);
+//        b1.setVisibility(View.INVISIBLE);
+
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -129,7 +134,23 @@ public class MainActivity extends AppCompatActivity {
                     String path= getPath(videoPath);
                     Log.i("Video_Path", "Path new  is "+path);
                     String word=executePython(path);
-                    Log.i("Video_Path", "Path new  is "+path);
+                    Log.i("Predicted word is", "Word new  is "+word);
+
+
+                    //opening second fragment and sending word to it
+                    View myView = findViewById(R.id.button_first);
+                    myView.performClick();
+
+                    SecondFragment secFragment = new SecondFragment();
+                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                    Bundle data = new Bundle();
+                    data.putString("word",word);
+                    secFragment.setArguments(data);
+                    fragmentTransaction.replace(R.id.nav_host_fragment_content_main,secFragment).commit();
+
+
+                    Log.i("Inside second fragment", "Word new  is "+word);
+
 //                    /storage/emulated/0/Movies/VID_20211028_151758.mp4
                     File fdelete = new File(videoPath.getPath());
                     if (fdelete.exists()) {

@@ -23,7 +23,7 @@ from com.arthenica.mobileffmpeg import FFprobe
 #     sys.exit("video path does not exist")
 print(tf.__version__)
 print(keras.__version__)
-filename = join(dirname(__file__), "model_D_new.json")
+filename = join(dirname(__file__), "model_entire_data.json")
 json_file = open(filename, 'r')
 # print('json loaded')
 # loaded_model_json = json_file.read()
@@ -34,7 +34,7 @@ jtopy=json.dumps(data)
 loaded_model = tf.keras.models.model_from_json(jtopy)
 # # # load weights into new model
 print("model loading started")
-model_name=join(dirname(__file__), "model_D_new.h5")
+model_name=join(dirname(__file__), "model_entire_data.h5")
 loaded_model.load_weights(model_name)
 print('model loaded')
 print(loaded_model)
@@ -350,20 +350,21 @@ def video_to_npy_array(video):
     if video_array is None:
         print('it is none')
         video_array = np.array(lip_frames, dtype="uint8")
-    print('count is',count)
-    print('image counter is',image_read_counter)
-#     print('video array is',video_array)
-    print(video_array.shape)
-    X = np.array(video_array)
-    X = X.reshape(X.shape + (1,))
-    X = np.expand_dims(X, axis=0)
-    print(X.shape)
-    prediction = loaded_model.predict(X)
-    print(prediction)
-    y_classes = prediction.argmax(axis=-1)
-    print(y_classes)
-    print(class_names[y_classes])
-    return class_names[y_classes]
+        return "No face Detected"
+    else:
+        print('count is',count)
+        print('image counter is',image_read_counter)
+        print(video_array.shape)
+        X = np.array(video_array)
+        X = X.reshape(X.shape + (1,))
+        X = np.expand_dims(X, axis=0)
+        print(X.shape)
+        prediction = loaded_model.predict(X)
+        print(prediction)
+        y_classes = prediction.argmax(axis=-1)
+        print(y_classes[0])
+        print('word is ',class_names[y_classes[0]])
+        return class_names[y_classes[0]]
 
 # def video_to_npy_array(video):
 #     count = 0
