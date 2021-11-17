@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.chaquo.python.PyObject;
@@ -36,6 +37,7 @@ import com.example.myapplication.databinding.ActivityMainBinding;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,7 +54,11 @@ public class MainActivity extends AppCompatActivity {
     private static int CAMERA_PERMISSION_CODE = 100;
     ActivityResultLauncher<Intent> activityResultLauncher;
     private Uri videoPath;
+    final LoadingDialog loadingDialog = new LoadingDialog(MainActivity.this);
+
+
     TextView textView;
+//    private ProgressBar spinner;
 
     private void recordVideo(){
         Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
@@ -104,11 +110,15 @@ public class MainActivity extends AppCompatActivity {
 //        Button b1 = (Button) findViewById(R.id.button_first);
 //        b1.setVisibility(View.INVISIBLE);
 
+//        spinner = findViewById(R.id.progressBar_cyclic);
+
+
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//                loadingDialog.startLoadingDialog();
             }
         });
 //        getStoragePermission();
@@ -129,44 +139,67 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     videoPath = result.getData().getData();
                     Log.i("Video_URI", "URI new is "+videoPath);
-//                    path is content://media/external/video/media/44
-                    Log.i("Video_Path", "Path new  is "+getPath(videoPath));
                     String path= getPath(videoPath);
-                    Log.i("Video_Path", "Path new  is "+path);
-                    String word=executePython(path);
-                    Log.i("Predicted word is", "Word new  is "+word);
+                    new GetPathTask(path).execute();
 
-
-                    //opening second fragment and sending word to it
-                    View myView = findViewById(R.id.button_first);
-                    myView.performClick();
-
-                    SecondFragment secFragment = new SecondFragment();
-                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    Bundle data = new Bundle();
-                    data.putString("word",word);
-                    secFragment.setArguments(data);
-                    fragmentTransaction.replace(R.id.nav_host_fragment_content_main,secFragment).commit();
-
-
-                    Log.i("Inside second fragment", "Word new  is "+word);
-
-//                    /storage/emulated/0/Movies/VID_20211028_151758.mp4
-                    File fdelete = new File(videoPath.getPath());
-                    if (fdelete.exists()) {
-                        if (fdelete.delete()) {
-                            Log.i("file Deleted :", videoPath.getPath());
-                        } else {
-                            Log.i("file not Deleted :", videoPath.getPath());
-                        }
-                    }
                 }
             }
         });
     }
+    private final class GetPathTask extends AsyncTask<Void, Void, String> {
+        private String path;
+        public GetPathTask(String path) {
+            this.path = path;
+        }
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+//            spinner.setVisibility(View.VISIBLE);
+            loadingDialog.startLoadingDialog();
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            String word=executePython(path);
+            return word;
+        }
+
+        @Override
+        protected void onPostExecute(String word) {
+//            spinner.setVisibility(View.INVISIBLE);
+            loadingDialog.dismissDialog();
+            Log.i("Predicted word is", "Word new  is "+word);
+
+            //opening second fragment and sending word to it
+            View myView = findViewById(R.id.button_first);
+            myView.performClick();
+
+            SecondFragment secFragment = new SecondFragment();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            Bundle data = new Bundle();
+            data.putString("word",word);
+            secFragment.setArguments(data);
+            fragmentTransaction.replace(R.id.nav_host_fragment_content_main,secFragment).commit();
+
+            Log.i("Inside second fragment", "Word new  is "+word);
+
+            File fdelete = new File(videoPath.getPath());
+            if (fdelete.exists()) {
+                if (fdelete.delete()) {
+                    Log.i("file Deleted :", videoPath.getPath());
+                } else {
+                    Log.i("file not Deleted :", videoPath.getPath());
+                }
+            }
+        }
+
+    }
     public String executePython(String video_path)
     {
+//        ProgressBar progressBar_cyclic;
+//        spinner = findViewById(R.id.progressBar_cyclic);
+//        spinner.setVisibility(View.VISIBLE);
         if(!Python.isStarted())
         {
             Python.start(new AndroidPlatform(this));
